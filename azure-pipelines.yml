@@ -1,0 +1,49 @@
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: pipeline-source
+    ref: refs/heads/source-scripts
+
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  - name: pool
+    value: macos-latest
+  - group: MobileApps
+  
+pool:
+  vmImage: $(pool)
+  
+stages:
+- stage: Build
+  displayName: 'Build and Publish stage'
+  jobs:
+  - job: BuildandPublish
+    steps:
+    - template: /build/react-native-mobile-app-build.yml@templates
+      parameters:
+        NodeVersion: '12.19.0'
+        ProjectCodeDirectory: './MobildAppFramework'
+        ProjectName: 'MobildAppFramework'
+        ApksignerKeystoreFile: 'foodbook-upload-key.keystore'
+        AndroidKeyStorePassword: $(AndroidKeyStorePassword)
+        AndroidKeyAlias: $(AndroidKeyAlias)
+        AndroidKeyAliasPassword: $(AndroidKeyAliasPassword)
+        AppSlugAndroid: 'gayanishakaraw/foodbook-android'
+        UploadAPKToAppCenter: true
+        DistributionGroupId: '53edf4d6-d32f-4135-8cfc-28cb0475afcb'
+        AppCenterServiceEndpoint: 'App Center Mobile Framework'
+        
+#Apple-iOS
+        BuildiOS: false
+        AppSlugiOS: gayanishakaraw/foodbook-ios'
+        AppleCertificateFileName: 'foodbookProd.p12' #need to upload to the pipeline library
+        AppleCertificatePassword: 'default-value'
+        ProfileSecureFile: 'foodbook.mobileprovision'
+        WorkspacePath: 'ios/foodbookProject.xcworkspace'
+        SigningIdentity: 'defaultIdentity'
+        ProvisioningProfileUuid: 'f940ccde-a812-4ade-98d8-76c3ab1d0c2e'
